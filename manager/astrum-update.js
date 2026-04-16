@@ -24,8 +24,8 @@ program.parse(process.argv);
 /**
  * Update pattern library.
  */
-oldVersion = utils.$data.version;
-newVersion = utils.$pjson.version;
+var oldVersion = utils.$data.version;
+var newVersion = utils.$pjson.version;
 
 /**
  * Force restore instance.

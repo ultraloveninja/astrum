@@ -8,6 +8,88 @@ Astrum is a lightweight pattern library designed to be included with any web pro
 
 It's non-opinionated and doesn't expect you to write your markup or code in any particular way.
 
+## Maintaining this fork
+
+If you are maintaining a modern fork, follow this workflow.
+
+### 1) Clone and install
+
+```bash
+git clone <your-fork-url>
+cd astrum
+npm install
+```
+
+### 2) Run checks locally
+
+```bash
+npm run test
+npm run smoke
+npm run pack:check
+```
+
+### 3) Use your local build globally while developing
+
+Link your local checkout so `astrum` resolves to this repo:
+
+```bash
+npm link
+astrum --help
+```
+
+From any project where you want to use your local fork:
+
+```bash
+astrum init ./public/pattern-library
+```
+
+Remove the link when needed:
+
+```bash
+npm unlink -g astrum
+```
+
+### 4) Decide your npm package name
+
+- If you own the unscoped `astrum` package on npm, keep `"name": "astrum"`.
+- If you do not own it, set a scoped name in `package.json` (for example `"name": "@your-scope/astrum"`).
+
+The CLI command can still stay `astrum` because `bin.astrum` is already configured.
+
+### 5) Publish a release
+
+Login once (if needed):
+
+```bash
+npm login
+```
+
+Bump version and publish:
+
+```bash
+npm version patch
+npm publish --access public
+```
+
+Install globally from npm:
+
+```bash
+npm install -g astrum
+```
+
+Or for a scoped fork:
+
+```bash
+npm install -g @your-scope/astrum
+```
+
+### 6) Use CI before publish
+
+This fork includes two GitHub Actions workflows:
+
+- `CI`: runs on pushes and pull requests (Node 18/20/22), then runs lint, smoke, and package dry-run checks.
+- `Release Check`: run manually from the Actions tab (or via a `v*` tag) before publishing to npm.
+
 An Astrum pattern library comprises of components organised into groups. Each component has a `markup.html` and `description.md` file which are
 used to render an example of the component along with a code sample. A group can also have an description and is used for organisational purposes.
 You also have the option to add pages of content, for example an introduction page and/or coding guidelines specific to your project.
