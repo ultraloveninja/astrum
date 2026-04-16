@@ -14,7 +14,7 @@ program
  * Override argv[1] so that usage command is
  * formatted correctly.
  */
-process.argv[1] = 'patterns init';
+process.argv[1] = 'astrum init';
 
 program.parse(process.argv);
 

@@ -1,8 +1,6 @@
 var fs = require('fs-extra'),
     chalk = require('chalk'),
     inquirer = require('inquirer'),
-    mkdirp = require('mkdirp'),
-    isWindows = require('is-windows'),
     pjson = require('../package.json'),
     path = require('path');
 
@@ -33,26 +31,24 @@ module.exports = {
     },
 
     setup: function(path, callback) {
-        var _this = this,
-            error = false;
+        var _this = this;
+        callback = typeof callback !== 'undefined' ? callback : function(){};
 
-        fs.exists(path, function(r) {
-            if (r) {
-                throw(new Error(chalk.red('Pattern library has already been initialized.')));
-            }
-        });
+        if (fs.existsSync(path)) {
+            throw(new Error(chalk.red('Pattern library has already been initialized.')));
+        }
 
         _this.saveConfig(path, function() {
-            mkdirp(path, function (err) {
+            fs.mkdirp(path, function (err) {
                 if (err) {
                     console.error(chalk.red('Error: ' + err));
-                    error = true;
+                    return;
                 }
 
                 fs.copy(_this.pathify(_this.module_path + '/_template'), path, function (err) {
                     if (err) {
                         console.log(chalk.red('Error: ' + err));
-                        error = true;
+                        return;
                     }
 
                     _this.init();
@@ -61,8 +57,6 @@ module.exports = {
                     return callback();
                 });
             });
-
-            return ! error;
         });
     },
 
@@ -74,12 +68,11 @@ module.exports = {
 
     update: function(callback) {
         var _this = this;
+        callback = typeof callback !== 'undefined' ? callback : function(){};
 
-        fs.exists(_this.$config.path, function(r) {
-            if (!r) {
-                throw(new Error(chalk.red('No pattern library found to update.')));
-            }
-        });
+        if (!fs.existsSync(_this.$config.path)) {
+            throw(new Error(chalk.red('No pattern library found to update.')));
+        }
 
         fs.copy(_this.pathify(_this.module_path + '/_template/app'), _this.$config.path + '/app');
         fs.copy(_this.pathify(_this.module_path + '/_template/index.html'), _this.$config.path + '/index.html');
@@ -228,18 +221,13 @@ module.exports = {
     createGroupDescription: function(group_path) {
         var _this = this;
 
-        fs.exists(_this.pathify(group_path + '/description.md'), function(r) {
-
-            if(!r) {
-                fs.writeFile(_this.pathify(group_path + '/description.md'), '', function(err) {
-                    if (err) {
-                        console.log(chalk.red('Error: ' + err));
-                        error = true;
-                        return;
-                    }
-                });
-            }
-        });
+        if(!fs.existsSync(_this.pathify(group_path + '/description.md'))) {
+            fs.writeFile(_this.pathify(group_path + '/description.md'), '', function(err) {
+                if (err) {
+                    console.log(chalk.red('Error: ' + err));
+                }
+            });
+        }
     },
 
     deleteGroupFolder: function(group) {
@@ -298,15 +286,13 @@ module.exports = {
             component_path = group_path + '/' + component.name,
             error = false;
 
-        fs.exists(_this.pathify(group_path), function(r) {
-            if(r) {
+        if(fs.existsSync(_this.pathify(group_path))) {
+            _this.createComponentFolder(component_path);
+        } else {
+            _this.createGroupFolder(group_path, function() {
                 _this.createComponentFolder(component_path);
-            } else {
-                _this.createGroupFolder(group_path, function() {
-                    _this.createComponentFolder(component_path);
-                });
-            }
-        });
+            });
+        }
 
         return ! error;
     },
@@ -601,7 +587,7 @@ module.exports = {
     },
 
     pathify: function(path) {
-        if(isWindows()) {
+        if(process.platform === 'win32') {
             return path.replace(/(\/)/g, "\\");
         }
 
